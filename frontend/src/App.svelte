@@ -12,7 +12,9 @@
 	onMount(() => connect());
 
 	function connect() {
-		socket = new WebSocket(`ws://${location.host}/ws`);
+		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+		socket = new WebSocket(`${protocol}//${location.host}/ws`);
+
 		socket.onopen = () => {
 			isConnected = true;
 			status = "Ready";
