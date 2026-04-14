@@ -144,7 +144,21 @@ func main() {
 	})
 
 	dist, _ := fs.Sub(assets, "frontend/dist")
-	r.Handle("/*", mimeMiddleware(http.FileServer(http.FS(dist))))
+fileServer:=http.FileServer(http.FS(dist))
+
+r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+        path := r.URL.Path
+        
+        // Manual MIME override for JS and CSS
+        if len(path) > 3 && path[len(path)-3:] == ".js" {
+            w.Header().Set("Content-Type", "application/javascript")
+        } else if len(path) > 4 && path[len(path)-4:] == ".css" {
+            w.Header().Set("Content-Type", "text/css")
+        }
+        
+        fileServer.ServeHTTP(w, r)
+    })
+	
 	fmt.Println("Listening on :8080")
 	http.ListenAndServe(":8080", r)
 }
