@@ -94,6 +94,17 @@ func handleTrigger(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+// Create a wrapper to fix MIME types
+func mimeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If the file is a .js file, force the correct MIME type
+		if path := r.URL.Path; len(path) > 3 && path[len(path)-3:] == ".js" {
+			w.Header().Set("Content-Type", "application/javascript")
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	dict, _ := engine.NewDictionary("./dictionary.json")
 	globalDict = dict
@@ -133,7 +144,7 @@ func main() {
 	})
 
 	dist, _ := fs.Sub(assets, "frontend/dist")
-	r.Handle("/*", http.FileServer(http.FS(dist)))
+	r.Handle("/*", mimeMiddleware(FileServer(http.FS(dist))))
 	fmt.Println("Listening on :8080")
 	http.ListenAndServe(":8080", r)
 }
