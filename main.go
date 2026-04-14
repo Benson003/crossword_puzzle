@@ -144,7 +144,7 @@ func main() {
 	})
 
 	dist, _ := fs.Sub(assets, "frontend/dist")
-	r.Handle("/*", mimeMiddleware(FileServer(http.FS(dist))))
+	r.Handle("/*", mimeMiddleware(http.FileServer(http.FS(dist))))
 	fmt.Println("Listening on :8080")
 	http.ListenAndServe(":8080", r)
 }
